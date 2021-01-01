@@ -13,6 +13,8 @@ library(assertthat)
 
 ## Parameters ------------------------------------------------------------------
 
+DEBUG = TRUE
+
 # display parameters
 UNIT_WIDTH = 1
 UNIT_HEIGHT = 1
@@ -112,5 +114,14 @@ set_component_value <- function(DF, component, new_value){
   
   return(answer_df)
 }
+
+## create base plot once for speed ---------------------------------------------
+
+pp = ggplot() +
+  xlim(c(min(DF_BOARD$x_min), max(DF_BOARD$x_max))) +
+  ylim(c(min(DF_BOARD$y_min), max(DF_BOARD$y_max))) +
+  theme_void() +
+  theme(legend.position = "none")
+  
 
 ##
