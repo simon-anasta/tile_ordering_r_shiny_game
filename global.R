@@ -13,7 +13,7 @@ library(assertthat)
 
 ## Parameters ------------------------------------------------------------------
 
-DEBUG = TRUE
+DEBUG = FALSE
 
 # display parameters
 UNIT_WIDTH = 1
