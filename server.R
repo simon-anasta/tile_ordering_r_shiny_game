@@ -32,21 +32,45 @@ shinyServer(function(input, output, session) {
   
   output$game_board <- renderPlot({
     
-    DF = game_state$board %>%
-      mutate(display_value = ifelse(is.na(value), "-", as.character(value)))
+    values_DF = game_state$board %>%
+      mutate(display_value = ifelse(is.na(value), "-", as.character(value))) %>%
+      select(x_mid, y_mid, display_value)
+
+    board_DF = game_state$board %>%
+      select(xmin=x_min,
+             xmax=x_max,
+             ymin=y_min,
+             ymax=y_max,
+             fill_colour = background_colour,
+             line_colour = background_colour,
+             value)
+    
+    card_DF = game_state$board %>%
+      filter(!is.na(value) & nchar(card_colour) == 7) %>%
+      select(xmin=x_inner_min,
+             xmax=x_inner_max,
+             ymin=y_inner_min,
+             ymax=y_inner_max,
+             fill_colour = card_colour,
+             line_colour = card_border_colour,
+             value)
+    
+    # this order matters as lower rectangles are drawn on top of earlier ones
+    DF3 = rbind(board_DF, card_DF)
     
     pp +
-      geom_rect(data=DF,
-                mapping=aes(xmin=x_min,
-                            xmax=x_max,
-                            ymin=y_min,
-                            ymax=y_max,
-                            fill=is_ai),
-                color="black",
-                alpha=0.5) +
-      geom_text(data=DF,
+      geom_rect(data = DF3,
+                mapping=aes(xmin=xmin,
+                            xmax=xmax,
+                            ymin=ymin,
+                            ymax=ymax,
+                            fill=fill_colour,
+                            color = line_colour)
+      ) +
+      scale_fill_identity() +
+      scale_colour_identity() +
+      geom_text(data=values_DF,
                 aes(x=x_mid, y=y_mid, label=display_value), size=16)
-    
   })
   
   ## debug info ----------------------------------------------------------------
