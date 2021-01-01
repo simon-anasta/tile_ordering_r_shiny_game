@@ -15,7 +15,7 @@ shinyUI(fluidPage(
   
   h4("Insturctions"),
   
-  p("Each player has a deck of numbered cards (default 10 each of 1, 2 and 3",
+  p("Each player has a deck of numbered cards (default 10 each of 1, 2 and 3).",
     "Each player's deck is shuffled and three cards are dealed face-up. The",
     "top card of the deck is also turned face up."),
   p("On each player's turn, they choose one of their four face up cards and",
@@ -23,7 +23,7 @@ shinyUI(fluidPage(
     "card."),
   p("After playing, if the top card of the deck was not played it is put in",
     "the empty space left by the card that was played. The new card on top of",
-    "the deck is turned face up"),
+    "the deck is turned face up."),
   p("The game ends hen both players run out of cards. The player with the",
     "highest score at the end of the game is the winner. Each card played",
     "scores its face value, but is doubled if it is part of a run."),
