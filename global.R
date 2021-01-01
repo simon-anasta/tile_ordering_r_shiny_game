@@ -126,14 +126,14 @@ pp = ggplot() +
 ## Setup game ------------------------------------------------------------------
 
 # player deck
-player_deck = c(rep("1", NUM_CARDS_VALUE_1),
-                rep("2", NUM_CARDS_VALUE_2),
-                rep("3", NUM_CARDS_VALUE_3)) %>%
+player_deck = c(rep(1, NUM_CARDS_VALUE_1),
+                rep(2, NUM_CARDS_VALUE_2),
+                rep(3, NUM_CARDS_VALUE_3)) %>%
   sample(DECK_SIZE)
 # ai deck
-ai_deck = c(rep("1", NUM_CARDS_VALUE_1),
-            rep("2", NUM_CARDS_VALUE_2),
-            rep("3", NUM_CARDS_VALUE_3)) %>%
+ai_deck = c(rep(1, NUM_CARDS_VALUE_1),
+            rep(2, NUM_CARDS_VALUE_2),
+            rep(3, NUM_CARDS_VALUE_3)) %>%
   sample(DECK_SIZE)
 # deal starting hands
 DF_BOARD = set_cmp_value(DF_BOARD,"player_storage_1", player_deck[1])
@@ -146,13 +146,56 @@ player_deck = player_deck[-(1:4)]
 DF_BOARD = set_cmp_value(DF_BOARD,"player_score", 0)
 DF_BOARD = set_cmp_value(DF_BOARD,"ai_score", 0)
 
-## NEXT SECTION ------------
+## Update each turn ------------------------------------------------------------
+# pass in input and reactiveValues so function can interact with them
 
-update_state <- function(){
+update_state <- function(input, game_state){
+
+  mouse_pc = input$plot_click
+  component = component_clicked(mouse_pc$x, mouse_pc$y)
   
+  # skip if not valid click
+  if(!component %in% c("player_deck",
+                       "player_storage_1",
+                       "player_storage_2",
+                       "player_storage_3")){
+    return()
+  }
+  
+  # local copy for ease of reference
+  DF = game_state$board
+  
+  # fetch relevant values
+  last_player_placement = get_cmp_value(DF, "player_placement")
+  last_player_score = get_cmp_value(DF, "player_score")
+  value_clicked = get_cmp_value(DF, component)
+  
+  # stop if null value clicked
+  if(is.na(value_clicked))
+    return()
+  
+  # is sequence maintained?
+  p_seq = value_clicked == 1 |
+    (game_state$player_sequence
+     & value_clicked == last_player_placement + 1)
+
+  # show placement
+  DF = set_cmp_value(DF, "player_placement", value_clicked)
+  
+  # new score
+  score_increase = ifelse(p_seq & value_clicked != 1, 2, 1) * value_clicked
+  DF = set_cmp_value(DF, "player_score", last_player_score + score_increase)
+  
+  # update card display
+  top_deck = get_cmp_value(DF, "player_deck")
+  DF = set_cmp_value(DF, component, top_deck)
+  DF = set_cmp_value(DF, "player_deck", game_state$player_deck[1])
+  
+  # update reactives
+  game_state$player_deck = game_state$player_deck[-1]
+  game_state$player_sequence = p_seq
+  game_state$board = DF
 }
-
-
 
 ## Reference -------------------------------------------------------------------
 

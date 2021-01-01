@@ -16,20 +16,25 @@ shinyServer(function(input, output, session) {
   game_state$board = DF_BOARD
   game_state$player_deck = player_deck
   game_state$ai_deck = ai_deck
+  game_state$player_sequence = FALSE
+  game_state$ai_sequence = FALSE
   
   ## resolve actions -----------------------------------------------------------
   
   observeEvent(input$plot_click,{ 
     game_state$step = game_state$step + 1
-    update_state()
+    update_state(input, game_state)
   })
   
   ## plot the game board -------------------------------------------------------
   
   output$game_board <- renderPlot({
     
+    DF = game_state$board %>%
+      mutate(display_value = ifelse(is.na(value), "-", as.character(value)))
+    
     pp +
-      geom_rect(data=game_state$board,
+      geom_rect(data=DF,
                 mapping=aes(xmin=x_min,
                             xmax=x_max,
                             ymin=y_min,
@@ -37,8 +42,8 @@ shinyServer(function(input, output, session) {
                             fill=is_ai),
                 color="black",
                 alpha=0.5) +
-      geom_text(data=game_state$board,
-                aes(x=x_mid, y=y_mid, label=value), size=16)
+      geom_text(data=DF,
+                aes(x=x_mid, y=y_mid, label=display_value), size=16)
     
   })
   
@@ -53,7 +58,8 @@ shinyServer(function(input, output, session) {
       paste("x =", pc$x,
             "\ny =", pc$y,
             "\ncomponent =", component_clicked(pc$x, pc$y),
-            "\nstep number = ", game_state$step
+            "\nstep number = ", game_state$step,
+            "\nplayer sequence = ", game_state$player_sequence
       )
     })
     output$debug_values <- renderUI({
