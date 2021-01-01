@@ -12,6 +12,8 @@
 shinyUI(fluidPage(
   
   plotOutput("plot1", click = "plot_click"),
-  verbatimTextOutput("info")
+  
+  uiOutput("debug_values")
+  
 
 ))
