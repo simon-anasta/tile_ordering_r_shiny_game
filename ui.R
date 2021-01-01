@@ -11,9 +11,8 @@
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
   
-  plotOutput("plot1", click = "plot_click"),
+  plotOutput("game_board", click = "plot_click"),
   
   uiOutput("debug_values")
   
-
 ))

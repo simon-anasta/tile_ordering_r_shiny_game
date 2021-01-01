@@ -97,7 +97,7 @@ component_clicked = function(mouse_x, mouse_y){
 
 ## Get and Set value of component ----------------------------------------------
 
-get_component_value <- function(DF, component){
+get_cmp_value <- function(DF, component){
   
   answer = DF %>%
     filter(component_name == component) %>%
@@ -107,7 +107,7 @@ get_component_value <- function(DF, component){
   return(handle_non_singletons(answer))
 }
 
-set_component_value <- function(DF, component, new_value){
+set_cmp_value <- function(DF, component, new_value){
   
   answer_df = DF %>%
     mutate(value = ifelse(component_name == component, new_value, value))
@@ -122,6 +122,40 @@ pp = ggplot() +
   ylim(c(min(DF_BOARD$y_min), max(DF_BOARD$y_max))) +
   theme_void() +
   theme(legend.position = "none")
-  
 
-##
+## Setup game ------------------------------------------------------------------
+
+# player deck
+player_deck = c(rep("1", NUM_CARDS_VALUE_1),
+                rep("2", NUM_CARDS_VALUE_2),
+                rep("3", NUM_CARDS_VALUE_3)) %>%
+  sample(DECK_SIZE)
+# ai deck
+ai_deck = c(rep("1", NUM_CARDS_VALUE_1),
+            rep("2", NUM_CARDS_VALUE_2),
+            rep("3", NUM_CARDS_VALUE_3)) %>%
+  sample(DECK_SIZE)
+# deal starting hands
+DF_BOARD = set_cmp_value(DF_BOARD,"player_storage_1", player_deck[1])
+DF_BOARD = set_cmp_value(DF_BOARD,"player_storage_2", player_deck[2])
+DF_BOARD = set_cmp_value(DF_BOARD,"player_storage_3", player_deck[3])
+DF_BOARD = set_cmp_value(DF_BOARD,"player_deck", player_deck[4])
+player_deck = player_deck[-(1:4)]
+
+# initial scores
+DF_BOARD = set_cmp_value(DF_BOARD,"player_score", 0)
+DF_BOARD = set_cmp_value(DF_BOARD,"ai_score", 0)
+
+## NEXT SECTION ------------
+
+update_state <- function(){
+  
+}
+
+
+
+## Reference -------------------------------------------------------------------
+
+# component = component_clicked(mouse_x, mouse_y)
+# value = get_cmp_value(DF, component)
+# DF = set_cmp_value(DF, component, new_value)
