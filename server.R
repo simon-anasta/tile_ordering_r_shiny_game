@@ -23,7 +23,9 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$plot_click,{ 
     game_state$step = game_state$step + 1
-    update_state(input, game_state)
+    ai_move = update_state(input, game_state)
+    if(ai_move)
+      update_ai_state(input, game_state)
   })
   
   ## plot the game board -------------------------------------------------------

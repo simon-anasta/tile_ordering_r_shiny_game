@@ -142,6 +142,12 @@ DF_BOARD = set_cmp_value(DF_BOARD,"player_storage_3", player_deck[3])
 DF_BOARD = set_cmp_value(DF_BOARD,"player_deck", player_deck[4])
 player_deck = player_deck[-(1:4)]
 
+DF_BOARD = set_cmp_value(DF_BOARD,"ai_storage_1", ai_deck[1])
+DF_BOARD = set_cmp_value(DF_BOARD,"ai_storage_2", ai_deck[2])
+DF_BOARD = set_cmp_value(DF_BOARD,"ai_storage_3", ai_deck[3])
+DF_BOARD = set_cmp_value(DF_BOARD,"ai_deck", ai_deck[4])
+ai_deck = ai_deck[-(1:4)]
+
 # initial scores
 DF_BOARD = set_cmp_value(DF_BOARD,"player_score", 0)
 DF_BOARD = set_cmp_value(DF_BOARD,"ai_score", 0)
@@ -159,7 +165,7 @@ update_state <- function(input, game_state){
                        "player_storage_1",
                        "player_storage_2",
                        "player_storage_3")){
-    return()
+    return(FALSE)
   }
   
   # local copy for ease of reference
@@ -172,7 +178,7 @@ update_state <- function(input, game_state){
   
   # stop if null value clicked
   if(is.na(value_clicked))
-    return()
+    return(FALSE)
   
   # is sequence maintained?
   p_seq = value_clicked == 1 |
@@ -195,6 +201,103 @@ update_state <- function(input, game_state){
   game_state$player_deck = game_state$player_deck[-1]
   game_state$player_sequence = p_seq
   game_state$board = DF
+  
+  return(TRUE)
+}
+
+## Play AI turn ----------------------------------------------------------------
+# pass in input and reactiveValues so function can interact with them
+
+update_ai_state <- function(input, game_state){
+  # local copy for ease of reference
+  DF = game_state$board
+  
+  # choose component for ai to play
+  component = ai_decision(DF)
+  
+  # fetch relevant values
+  last_ai_placement = get_cmp_value(DF, "ai_placement")
+  last_ai_score = get_cmp_value(DF, "ai_score")
+  value_clicked = get_cmp_value(DF, component)
+
+  # is sequence maintained?
+  ai_seq = value_clicked == 1 |
+    (game_state$ai_sequence
+     & value_clicked == last_ai_placement + 1)
+  
+  # show placement
+  DF = set_cmp_value(DF, "ai_placement", value_clicked)
+  
+  # new score
+  score_increase = ifelse(ai_seq & value_clicked != 1, 2, 1) * value_clicked
+  DF = set_cmp_value(DF, "ai_score", last_ai_score + score_increase)
+  
+  # update card display
+  top_deck = get_cmp_value(DF, "ai_deck")
+  DF = set_cmp_value(DF, component, top_deck)
+  DF = set_cmp_value(DF, "ai_deck", game_state$ai_deck[1])
+  
+  # update reactives
+  game_state$ai_deck = game_state$ai_deck[-1]
+  game_state$ai_sequence = ai_seq
+  game_state$board = DF
+}
+
+## AI decision making ----------------------------------------------------------
+
+ai_decision <- function(DF){
+  
+  ai_deck_value = get_cmp_value(DF, "ai_deck")
+  ai_storage_1_value = get_cmp_value(DF, "ai_storage_1")
+  ai_storage_2_value = get_cmp_value(DF, "ai_storage_2")
+  ai_storage_3_value = get_cmp_value(DF, "ai_storage_3")
+  ai_last_value = get_cmp_value(DF, "ai_placement")
+  
+  # if no lst value use zero
+  if(is.na(ai_last_value))
+    ai_last_value = 0
+  
+  candidates = c()
+
+  # play sequential value if possible
+  if(!is.na(ai_deck_value) & ai_deck_value == ai_last_value + 1)
+    candidates = c(candidates, "ai_deck")
+  if(!is.na(ai_storage_1_value) & ai_storage_1_value == ai_last_value + 1)
+    candidates = c(candidates, "ai_storage_1")
+  if(!is.na(ai_storage_2_value) & ai_storage_2_value == ai_last_value + 1)
+    candidates = c(candidates, "ai_storage_2")
+  if(!is.na(ai_storage_3_value) & ai_storage_3_value == ai_last_value + 1)
+    candidates = c(candidates, "ai_storage_3")
+
+  if(length(candidates) >= 1)
+    return(sample(candidates, 1))
+  
+  # play 1 if possible
+  if(!is.na(ai_deck_value) & ai_deck_value == 1)
+    candidates = c(candidates, "ai_deck")
+  if(!is.na(ai_storage_1_value) & ai_storage_1_value == 1)
+    candidates = c(candidates, "ai_storage_1")
+  if(!is.na(ai_storage_2_value) & ai_storage_2_value == 1)
+    candidates = c(candidates, "ai_storage_2")
+  if(!is.na(ai_storage_3_value) & ai_storage_3_value == 1)
+    candidates = c(candidates, "ai_storage_3")
+  
+  if(length(candidates) >= 1)
+    return(sample(candidates, 1))
+  
+  # play anything possible
+  if(!is.na(ai_deck_value))
+    candidates = c(candidates, "ai_deck")
+  if(!is.na(ai_storage_1_value))
+    candidates = c(candidates, "ai_storage_1")
+  if(!is.na(ai_storage_2_value))
+    candidates = c(candidates, "ai_storage_2")
+  if(!is.na(ai_storage_3_value))
+    candidates = c(candidates, "ai_storage_3")
+  
+  if(length(candidates) >= 1)
+    return(sample(candidates, 1))
+
 }
 
 ## Reference -------------------------------------------------------------------
